@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
 		if(hist_eq)
 		{
 			Mat img_hist_equalized;
-			cvtColor(pic[imgcnt], img_hist_equalized, CV_BGR2YCrCb);
+			cvtColor(pic[imgcnt], img_hist_equalized, cv::COLOR_BGR2YCrCb);
 
 			vector<Mat> channels;
 			split(img_hist_equalized,channels);
@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
 			equalizeHist(channels[0], channels[0]);
 			merge(channels,img_hist_equalized);
 
-			cvtColor(img_hist_equalized, pic[imgcnt], CV_YCrCb2BGR);
+			cvtColor(img_hist_equalized, pic[imgcnt], cv::COLOR_YCrCb2BGR);
 		}
 
 		if(equalize && imgcnt > 0)
@@ -299,12 +299,12 @@ int main(int argc, char *argv[])
 	fin.convertTo(img, CV_8UC3);
 
 	Mat img_hist_equalized;
-	cvtColor(img, img_hist_equalized, CV_BGR2YCrCb);
+	cvtColor(img, img_hist_equalized, cv::COLOR_BGR2YCrCb);
 
 	vector<Mat> channels;
 	split(img_hist_equalized,channels);	
 
-	cvtColor(img, img_hist_equalized, CV_BGR2YCrCb);
+	cvtColor(img, img_hist_equalized, cv::COLOR_BGR2YCrCb);
 	split(img_hist_equalized,channels);
 
 	Ptr<CLAHE> clahe = createCLAHE(10.0, Size(8,8));
@@ -314,7 +314,7 @@ int main(int argc, char *argv[])
 	merge(channels,img_hist_equalized);
 
 	Mat out;
-	cvtColor(img_hist_equalized, out, CV_YCrCb2BGR);
+	cvtColor(img_hist_equalized, out, cv::COLOR_YCrCb2BGR);
 
 	imwrite("panorama.jpg", out);
 

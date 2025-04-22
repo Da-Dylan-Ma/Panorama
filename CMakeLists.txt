@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 project( DisplayImage )
-find_package( OpenCV REQUIRED )
+set(OpenCV_DIR ~/local-opencv/lib/cmake/opencv4)
+find_package(OpenCV REQUIRED)
 add_executable( MSOP MSOP.cpp )
 add_executable( blending_direct blending_direct.cpp )
 add_executable( blending_alpha blending_alpha.cpp )

@@ -127,7 +127,7 @@ vector<Vec3f> interest_point(Mat pic, int num_IP, int level, vector<descriptor> 
 {
 	Mat gray_pic;
 
-	cvtColor(pic, gray_pic, CV_BGR2GRAY);
+	cvtColor(pic, gray_pic, cv::COLOR_BGR2GRAY);
 	gray_pic.convertTo(gray_pic, CV_32F);
 
 	for(int l = 0; l < level; l++)
