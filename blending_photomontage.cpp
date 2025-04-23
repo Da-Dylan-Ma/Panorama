@@ -75,6 +75,8 @@ Mat  pic[100];
 int  cum_yshift[100];
 int  mv_cnt      = 0;
 
+bool dump_seam_debug = true;
+
 /*------------------------------------------------------------------*/
 /* ---------------------- helper math ----------------------------- */
 static inline long rss_kb(){
@@ -365,6 +367,30 @@ int main(int argc,char*argv[])
                     Q.push(MP(diff.at<float>(nx,ny),MP(clr,nx*choice.cols+ny)));
             }
         }
+
+        // ---------- optional red-seam dump ----------
+        if (dump_seam_debug) {
+            Mat seam = fin.clone();
+            for (int x = 0; x < choice.rows; ++x)
+                for (int y = 0; y < choice.cols; ++y) {
+                    int side = choice.at<int>(x, y);
+                    if (!side) continue;
+                    const int dx[4] = {0,0,1,-1}, dy[4] = {1,-1,0,0};
+                    for (int k = 0; k < 4; ++k) {
+                        int nx = x + dx[k], ny = y + dy[k];
+                        if (nx < 0 || nx >= choice.rows ||
+                            ny < 0 || ny >= choice.cols) continue;
+                        if (choice.at<int>(nx, ny) != side) {
+                            seam.at<Vec3f>(x, y + cum_yshift[i]) = Vec3f(0,0,255); // BGR red
+                            break;
+                        }
+                    }
+                }
+            Mat seam8; seam.convertTo(seam8, CV_8UC3);
+            imwrite((dir + "panorama_seam_" + to_string(i) + ".jpg").c_str(), seam8);
+        }
+
+        // ---------- Graph Cut + Poisson blending ----------
 
         /* ----------- initial copy for good guess ------------------ */
         for(int x=0;x<pic[i].rows;++x){
