@@ -1,9 +1,0 @@
-/home/mad29/projects/coursework/computer_vision/project/variant-5/build/CMakeFiles/maxflow.dir
-/home/mad29/projects/coursework/computer_vision/project/variant-5/build/CMakeFiles/MSOP.dir
-/home/mad29/projects/coursework/computer_vision/project/variant-5/build/CMakeFiles/blending_direct.dir
-/home/mad29/projects/coursework/computer_vision/project/variant-5/build/CMakeFiles/blending_alpha.dir
-/home/mad29/projects/coursework/computer_vision/project/variant-5/build/CMakeFiles/blending_graphcut.dir
-/home/mad29/projects/coursework/computer_vision/project/variant-5/build/CMakeFiles/blending_poisson.dir
-/home/mad29/projects/coursework/computer_vision/project/variant-5/build/CMakeFiles/blending_photomontage.dir
-/home/mad29/projects/coursework/computer_vision/project/variant-5/build/CMakeFiles/edit_cache.dir
-/home/mad29/projects/coursework/computer_vision/project/variant-5/build/CMakeFiles/rebuild_cache.dir

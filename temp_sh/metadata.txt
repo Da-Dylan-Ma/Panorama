@@ -1,3 +1,0 @@
-../temp_sh/fin_img0.jpg 0
-../temp_sh/fin_img1.jpg 605
-../temp_sh/fin_img2.jpg 965
