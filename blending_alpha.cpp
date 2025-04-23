@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
 	string metadata_nme = dir + "metadata.txt";
 	FILE *metadata = fopen(metadata_nme.c_str(), "r");
 
-	imgcnt = 0;	
+	imgcnt = 0;
 
 	char fname[100];
 	while(~fscanf(metadata, "%s%d", fname, &cum_yshift[imgcnt]))

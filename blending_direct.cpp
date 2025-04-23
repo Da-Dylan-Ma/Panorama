@@ -1,18 +1,19 @@
 #include <stdio.h>
 #include <iostream>
 #include <vector>
+#include <queue>
 #include <opencv2/opencv.hpp>
-#include <Eigen/Sparse>
-#include <Eigen/Dense>
+
+#define MP make_pair
+#define F first
+#define S second
 
 using namespace cv;
 using namespace std;
-using namespace Eigen;
 
-typedef SparseMatrix<float> SpMat;
-typedef Triplet<float> T;
-
+bool equalize = 1;
 int imgcnt = 0;
+
 Mat pic[100];
 int cum_yshift[100];
 
@@ -20,7 +21,7 @@ int main(int argc, char *argv[])
 {
     if(argc != 2)
     {
-        fprintf(stderr, "Usage: ./blending_pcg input_directory/\n");
+        fprintf(stderr, "Usage: ./blending input_directory/\n");
         exit(-1);
     }
 
@@ -31,84 +32,59 @@ int main(int argc, char *argv[])
     FILE *metadata = fopen(metadata_nme.c_str(), "r");
 
     imgcnt = 0;
+
     char fname[100];
-    while (~fscanf(metadata, "%s%d", fname, &cum_yshift[imgcnt]))
+    while(~fscanf(metadata, "%s%d", fname, &cum_yshift[imgcnt]))
     {
         pic[imgcnt] = imread(fname);
-        if (pic[imgcnt].empty()) {
-            cerr << "Failed to read image: " << fname << endl;
-            exit(-1);
+
+        if(equalize && imgcnt > 0)
+        {
+            int overlap = cum_yshift[imgcnt-1] + pic[imgcnt-1].cols - cum_yshift[imgcnt];
+
+            float inten_del = 0, cnt = 0;
+            for(int x = 0; x < pic[imgcnt].rows; x++)
+            {
+                if(x < 2 || x >= pic[imgcnt].rows - 2)
+                {
+                    for(int y = 0; y < overlap; y++)
+                    {
+                        Vec3b my_clr = pic[imgcnt].at<Vec3b>(x, y);
+                        Vec3b fin_clr = pic[imgcnt-1].at<Vec3b>(x, y + cum_yshift[imgcnt] - cum_yshift[imgcnt-1]);
+
+                        float my_inten = 0.114 * my_clr[0] + 0.587 * my_clr[1] + 0.299 * my_clr[2];
+                        float fin_inten = 0.114 * fin_clr[0] + 0.587 * fin_clr[1] + 0.299 * fin_clr[2];
+
+                        inten_del += my_inten - fin_inten;
+                        cnt++;
+                    }
+                }
+            }
+            inten_del /= cnt;
+            pic[imgcnt].convertTo(pic[imgcnt], -1, 1, -inten_del);
+
+            string newfname = string(fname);
+            newfname.resize(newfname.size() - 4);
+            newfname += "_shift.jpg";
+            imwrite(newfname.c_str(), pic[imgcnt]);
         }
-        imgcnt++;
-    }
-    fclose(metadata);
 
-    // --- PCG-based refinement of alignment (x-offsets only) ---
-    int dof = imgcnt;
-    VectorXf xshift(dof);
-    xshift.setZero();
-
-    vector<T> triplets;
-    vector<float> rvec;
-    int eqn = 0;
-
-    // Construct residuals from already good cum_yshift[]
-    for (int i = 0; i < imgcnt - 1; i++) {
-        triplets.emplace_back(eqn, i, -1);
-        triplets.emplace_back(eqn, i + 1, 1);
-        rvec.push_back(cum_yshift[i + 1] - cum_yshift[i]);
-        eqn++;
+        imgcnt ++;
     }
 
-    SpMat J(eqn, dof);
-    J.setFromTriplets(triplets.begin(), triplets.end());
-
-    VectorXf rhs(eqn);
-    for (int i = 0; i < eqn; i++) rhs[i] = rvec[i];
-
-    VectorXf b = -J.transpose() * rhs;
-    SpMat A = J.transpose() * J;
-
-    ConjugateGradient<SpMat, Lower|Upper> cg;
-    cg.compute(A);
-    VectorXf delta = cg.solve(b);
-
-    cout << "CG iterations: " << cg.iterations() << ", error: " << cg.error() << endl;
-
-    // Anchor to first image (shift[0] = 0)
-    delta = delta.array() - delta[0];
-    for (int i = 0; i < imgcnt; i++)
-        cum_yshift[i] = static_cast<int>(round(delta[i]));
-
-    // Ensure all shifts are non-negative
-    int min_shift = *min_element(cum_yshift, cum_yshift + imgcnt);
-    for (int i = 0; i < imgcnt; i++)
-        cum_yshift[i] -= min_shift;
-
-    // Compute canvas size
-    int max_width = 0;
-    for (int i = 0; i < imgcnt; i++)
-        max_width = max(max_width, cum_yshift[i] + pic[i].cols);
-
-    Mat fin(pic[0].rows, max_width, CV_8UC3, Scalar(0,0,0));
-    for (int x = 0; x < pic[0].rows; x++)
-        for (int y = 0; y < pic[0].cols; y++)
+    Mat fin(pic[0].rows, cum_yshift[imgcnt-1] + pic[0].cols, CV_8UC3);
+    for(int x = 0; x < pic[0].rows; x++)
+        for(int y = 0; y < pic[0].cols; y++)
             fin.at<Vec3b>(x, y) = pic[0].at<Vec3b>(x, y);
 
-    for (int i = 1; i < imgcnt; i++)
+    for(int i = 1; i < imgcnt; i++)
     {
         int overlap = cum_yshift[i-1] + pic[i-1].cols - cum_yshift[i];
-        for (int x = 0; x < pic[i].rows; x++)
+        for(int x = 0; x < pic[i].rows; x++)
         {
-            for (int y = overlap; y < pic[i].cols; y++)
-            {
-                int fx = x, fy = y + cum_yshift[i];
-                if (fy < fin.cols)
-                    fin.at<Vec3b>(fx, fy) = pic[i].at<Vec3b>(x, y);
-            }
+            for(int y = overlap; y < pic[i].cols; y++)
+                fin.at<Vec3b>(x, y + cum_yshift[i]) = pic[i].at<Vec3b>(x, y);
         }
     }
-
-    imwrite("panorama_ours.jpg", fin);
-    return 0;
+    imwrite("panorama.jpg", fin);
 }

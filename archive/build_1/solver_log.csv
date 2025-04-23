@@ -1,0 +1,2 @@
+image_idx,solver,precond,n_unknown,iterations,elapsed_ms,res0,res1,res2
+1,cg,none,4466427,579,379711,4.98496,3.08224,2.06521

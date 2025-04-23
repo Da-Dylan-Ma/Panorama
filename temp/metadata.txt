@@ -1,5 +1,0 @@
-../temp/fin_img0.jpg 0
-../temp/fin_img1.jpg 766
-../temp/fin_img2.jpg 2213
-../temp/fin_img3.jpg 3535
-../temp/fin_img4.jpg 5067

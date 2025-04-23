@@ -4,7 +4,7 @@
 # compile CXX with /usr/bin/g++-11
 CXX_DEFINES = 
 
-CXX_INCLUDES = -I/usr/include/eigen3 -isystem /home/mad29/local-opencv/include/opencv4
+CXX_INCLUDES = -isystem /home/mad29/local-opencv/include/opencv4
 
-CXX_FLAGS = 
+CXX_FLAGS = -std=c++17 -O3 -march=native -fopenmp
 
